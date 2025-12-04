@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>wPlace Pixel Full Timer</title>
+  <title>wPlace Pixel Timer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
@@ -13,15 +13,35 @@
       padding: 0;
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start;
       min-height: 100vh;
+      padding-top: 40px;
     }
 
+    /* Centering container for header + card */
+    .page-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    /* CLJ Header */
+    .clj-title {
+      text-align: center;
+      color: #38bdf8;
+      margin-bottom: 20px;
+      font-weight: 700;
+      font-size: 1.8rem;
+      text-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+    }
+
+    /* Card */
     .card {
       background: rgba(15, 23, 42, 0.96);
       border-radius: 18px;
       padding: 24px 20px;
-      max-width: 420px;
       width: 100%;
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
       border: 1px solid rgba(148, 163, 184, 0.3);
@@ -60,11 +80,6 @@
       box-sizing: border-box;
     }
 
-    input:focus {
-      border-color: #38bdf8;
-      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5);
-    }
-
     button {
       width: 100%;
       padding: 10px 14px;
@@ -83,11 +98,6 @@
       transform: translateY(-1px);
     }
 
-    button:active {
-      opacity: 0.9;
-      transform: translateY(0);
-    }
-
     .result {
       margin-top: 16px;
       padding: 10px 12px;
@@ -95,16 +105,6 @@
       background: rgba(15, 23, 42, 0.9);
       border: 1px solid rgba(148, 163, 184, 0.4);
       font-size: 0.9rem;
-      line-height: 1.4;
-    }
-
-    .result-line {
-      margin: 2px 0;
-    }
-
-    .result-label {
-      font-weight: 600;
-      color: #bfdbfe;
     }
 
     .error {
@@ -123,69 +123,49 @@
       color: #6b7280;
       text-align: center;
     }
-
-    .footer code {
-      font-size: 0.75rem;
-      background: #020617;
-      padding: 2px 5px;
-      border-radius: 6px;
-    }
   </style>
 </head>
 <body>
-  <h2 style="text-align:center; color:#38bdf8; margin-top:20px; font-weight:700;">
-  Hello CLJ......
-  </h2>
-  
-  <div class="card">
-    <h1>wPlace Pixel Timer</h1>
-    <div class="subtitle">
-      See when your pixels will be fully regenerated.
-    </div>
 
-    <div>
+  <div class="page-container">
+
+    <h2 class="clj-title">Hello CLJ Alliance.</h2>
+
+    <div class="card">
+      <h1>wPlace Pixel Timer</h1>
+      <div class="subtitle">
+        See when your pixels will be fully regenerated.
+      </div>
+
       <label for="maxPixels">Max pixels</label>
       <input id="maxPixels" type="number" min="0" step="1" placeholder="e.g. 3034" />
 
       <label for="currentPixels">Current pixels</label>
       <input id="currentPixels" type="number" min="0" step="1" placeholder="e.g. 500" />
+
+      <button id="calculateBtn">Calculate full time</button>
+
+      <div id="error" class="error" style="display:none;"></div>
+
+      <div id="result" class="result" style="display:none;">
+        <div><strong>Now:</strong> <span id="nowTime"></span></div>
+        <div><strong>Full at:</strong> <span id="fullTime"></span></div>
+        <div><strong>Time until full:</strong> <span id="timeRemaining"></span></div>
+        <div><strong>Minutes needed:</strong> <span id="minutesNeeded"></span></div>
+      </div>
+
+      <div class="footer">
+        Regen rate: <code id="rateDisplay"></code> pixels/min.
+      </div>
     </div>
 
-    <button id="calculateBtn">Calculate full time</button>
-
-    <div id="error" class="error" style="display:none;"></div>
-
-    <div id="result" class="result" style="display:none;">
-      <div class="result-line"><span class="result-label">Now:</span> <span id="nowTime"></span></div>
-      <div class="result-line"><span class="result-label">Full at:</span> <span id="fullTime"></span></div>
-      <div class="result-line"><span class="result-label">Time until full:</span> <span id="timeRemaining"></span></div>
-      <div class="result-line"><span class="result-label">Minutes needed:</span> <span id="minutesNeeded"></span></div>
-    </div>
-
-    <div class="footer">
-      Regen rate: <code id="rateDisplay"></code> pixels/min.<br />
-    </div>
   </div>
 
   <script>
-    // 👉 CHANGE THIS IF YOUR GAME USES A DIFFERENT RATE
     const PIXELS_PER_MINUTE = 2;
-
-    const maxPixelsInput = document.getElementById('maxPixels');
-    const currentPixelsInput = document.getElementById('currentPixels');
-    const calculateBtn = document.getElementById('calculateBtn');
-    const errorBox = document.getElementById('error');
-    const resultBox = document.getElementById('result');
-    const nowTimeSpan = document.getElementById('nowTime');
-    const fullTimeSpan = document.getElementById('fullTime');
-    const timeRemainingSpan = document.getElementById('timeRemaining');
-    const minutesNeededSpan = document.getElementById('minutesNeeded');
-    const rateDisplay = document.getElementById('rateDisplay');
-
-    rateDisplay.textContent = PIXELS_PER_MINUTE;
+    document.getElementById("rateDisplay").textContent = PIXELS_PER_MINUTE;
 
     function formatDateTime(date) {
-      // Uses your local timezone + format
       return date.toLocaleString(undefined, {
         weekday: 'short',
         year: 'numeric',
@@ -196,83 +176,61 @@
       });
     }
 
-    function formatDuration(totalMinutes) {
-      const minutes = Math.round(totalMinutes);
-      if (minutes <= 0) return '0 minutes';
-
-      const days = Math.floor(minutes / (60 * 24));
-      const hours = Math.floor((minutes % (60 * 24)) / 60);
-      const mins = minutes % 60;
-
-      const parts = [];
-      if (days > 0) parts.push(days + ' day' + (days !== 1 ? 's' : ''));
-      if (hours > 0) parts.push(hours + ' hour' + (hours !== 1 ? 's' : ''));
-      if (mins > 0) parts.push(mins + ' minute' + (mins !== 1 ? 's' : ''));
-
-      return parts.join(', ');
+    function formatDuration(minutes) {
+      const m = Math.round(minutes);
+      const days = Math.floor(m / 1440);
+      const hours = Math.floor((m % 1440) / 60);
+      const mins = m % 60;
+      let out = [];
+      if (days) out.push(days + "d");
+      if (hours) out.push(hours + "h");
+      if (mins) out.push(mins + "m");
+      return out.join(" ");
     }
 
-    function showError(message) {
-      errorBox.textContent = message;
-      errorBox.style.display = 'block';
-      resultBox.style.display = 'none';
-    }
+    document.getElementById("calculateBtn").addEventListener("click", () => {
+      const max = Number(document.getElementById("maxPixels").value);
+      const cur = Number(document.getElementById("currentPixels").value);
+      const err = document.getElementById("error");
+      const res = document.getElementById("result");
 
-    function clearError() {
-      errorBox.style.display = 'none';
-      errorBox.textContent = '';
-    }
+      err.style.display = "none";
+      res.style.display = "none";
 
-    calculateBtn.addEventListener('click', () => {
-      clearError();
-
-      const maxPixels = Number(maxPixelsInput.value);
-      const currentPixels = Number(currentPixelsInput.value);
-
-      if (isNaN(maxPixels) || isNaN(currentPixels)) {
-        showError('Please enter numbers for both fields.');
+      if (isNaN(max) || isNaN(cur)) {
+        err.textContent = "Please enter valid numbers.";
+        err.style.display = "block";
+        return;
+      }
+      if (max <= 0 || cur < 0 || cur > max) {
+        err.textContent = "Values are invalid.";
+        err.style.display = "block";
         return;
       }
 
-      if (maxPixels <= 0) {
-        showError('Max pixels must be greater than 0.');
-        return;
-      }
-
-      if (currentPixels < 0) {
-        showError('Current pixels cannot be negative.');
-        return;
-      }
-
-      if (currentPixels > maxPixels) {
-        showError('Current pixels cannot be greater than max pixels.');
-        return;
-      }
-
-      const missingPixels = maxPixels - currentPixels;
+      const missing = max - cur;
       const now = new Date();
 
-      // Already full
-      if (missingPixels === 0) {
-        nowTimeSpan.textContent = formatDateTime(now);
-        fullTimeSpan.textContent = 'You are already full!';
-        timeRemainingSpan.textContent = '0 minutes';
-        minutesNeededSpan.textContent = '0';
-        resultBox.style.display = 'block';
+      if (missing === 0) {
+        document.getElementById("nowTime").textContent = formatDateTime(now);
+        document.getElementById("fullTime").textContent = "Already full!";
+        document.getElementById("timeRemaining").textContent = "0 minutes";
+        document.getElementById("minutesNeeded").textContent = "0";
+        res.style.display = "block";
         return;
       }
 
-      const minutesNeeded = missingPixels / PIXELS_PER_MINUTE;
-      const msToAdd = minutesNeeded * 60 * 1000;
-      const fullDate = new Date(now.getTime() + msToAdd);
+      const minutesNeeded = missing / PIXELS_PER_MINUTE;
+      const finishDate = new Date(now.getTime() + minutesNeeded * 60000);
 
-      nowTimeSpan.textContent = formatDateTime(now);
-      fullTimeSpan.textContent = formatDateTime(fullDate);
-      timeRemainingSpan.textContent = formatDuration(minutesNeeded);
-      minutesNeededSpan.textContent = minutesNeeded.toFixed(2);
+      document.getElementById("nowTime").textContent = formatDateTime(now);
+      document.getElementById("fullTime").textContent = formatDateTime(finishDate);
+      document.getElementById("timeRemaining").textContent = formatDuration(minutesNeeded);
+      document.getElementById("minutesNeeded").textContent = minutesNeeded.toFixed(2);
 
-      resultBox.style.display = 'block';
+      res.style.display = "block";
     });
   </script>
+
 </body>
 </html>
